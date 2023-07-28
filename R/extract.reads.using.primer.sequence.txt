@@ -1,0 +1,21 @@
+# to get a fastq
+grep -A 2 -B 1 'GAAGTAGCCATGCAATGCTGT' z0030475_Mnov_GTseek_028_121_PLT_8_R1.fastq | sed '/--/d' > z0030475-Mnov_gtseq_353.R1.fastq
+grep -A 2 -B 1 'TGAATTGGGAGGGGATTACA' z0030475_Mnov_GTseek_028_121_PLT_8_R2.fastq | sed '/--/d' > z0030475-Mnov_gtseq_535.R2.fastq
+
+# to get something close to a fasta
+grep 'GAAGTAGCCATGCAATGCTGT' z0030475_Mnov_GTseek_028_121_PLT_8_R1.fastq | sed '/--/d' > z0030475-Mnov_gtseq_535.R1.fasta
+grep 'TGAATTGGGAGGGGATTACA' z0030475_Mnov_GTseek_028_121_PLT_8_R2.fastq | sed '/--/d' > z0030475-Mnov_gtseq_535.R2.fasta
+
+
+in.file <- "fastq/z0030475-Mnov_gtseq_541.R2.fasta"
+out.file <- "fastq/z0030475-Mnov_gtseq_541-formatted.R2.fasta"
+seqs <- read.table(in.file)
+for (i in 1:dim(seqs)[1]){ 
+write.table(paste0("> rev.", i, "\n", seqs[i,1]), file = out.file, append = TRUE, quote = FALSE, col.names = FALSE, row.names = FALSE)
+}
+
+primer.seq <- "'GAAGTAGCCATGCAATGCTGT'"
+fastq.file <- "z0030475_Mnov_GTseek_028_121_PLT_8_R1.fastq"
+output <- system2(command = "grep",
+                    args = c(primer.seq, paste0("fastq/", fastq.file), "-o", "|", "wc", "-l"),
+                    stdout = TRUE, stderr = TRUE)

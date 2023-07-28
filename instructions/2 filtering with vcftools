@@ -1,0 +1,26 @@
+##################################################################################################
+#
+#
+#     Except where noted, this script implements filtering scheme 5 (FS5) in O'Leary et al. 2018.
+#      O'leary, S. J., J. B. Puritz, S. C. Willis, C. M. Hollenbeck and D. S. Portnoy. 2018. 
+#     These aren’t the loci you’e looking for: Principles of effective SNP filtering for molecular 
+#     ecologists. Molecular Ecology 27:3193-3206.
+#
+#	The bash script Summarize.vcf.sh (see end of file) should be in the main project directory,
+#	the vcf file produced by Freebayes should be in the data subfolder.  vcf files produced by
+#	this script will be written to the data subfolder. All other results will be
+#	written to a results subfolder
+#
+#	Visualizing summary stats is done with the Rscript Visualize.filtered.SNPs.R
+#
+#	Decomposing variants (steps 2.8 and 3.1) are done with vcfallelicprimitives.  I did this on
+#	Galaxy. The command line code provided here might or might not work, and path to vcfallelicprimitives
+#	will need to be adjusted.  I actually don't think you need to run vcfalleleprimitives again
+#	in step 3.1, but haven't confirmed that it can be skipped.
+#
+#	INFO filters (step 2.10) was implemented in Galaxy. The quoted portion will work if pasted
+#	into the Galaxy filter field.  Can't promise syntax is correct for command line otherwise.
+#
+#	
+#
+##################################################################################################

@@ -1,0 +1,22 @@
+locus,start,stop,Freq,missing,z0045405 notes
+Mnov_gtseq_108,129,130,NA,NA,3 reads
+Mnov_gtseq_115,129,130,NA,NA,monomorphic
+Mnov_gtseq_116,129,130,NA,NA,8 reads
+Mnov_gtseq_134,129,130,NA,NA,4 reads
+Mnov_gtseq_137,129,130,NA,NA,1 read
+Mnov_gtseq_146,129,130,NA,NA,3 reads
+Mnov_gtseq_151,129,130,NA,NA,monomorphic
+Mnov_gtseq_177,129,130,NA,NA,3 reads
+Mnov_gtseq_181,129,130,NA,NA,3 reads
+Mnov_gtseq_216,129,130,NA,NA,"158 As, 150 Gs; this is at 130 in the reference, 131 in the consensus, so maybe that's why?"
+Mnov_gtseq_224,127,128,NA,NA,"monomorphic, but in other samples this SNP is at 128"
+Mnov_gtseq_264,129,130,NA,NA,monomorphic
+Mnov_gtseq_266,NA,NA,11,8,This locus isn't in the panel; it must be getting someone else's reads
+Mnov_gtseq_398,121,122,NA,NA,"SNP is at 130 in reference, 131 in consensus"
+Mnov_gtseq_4,129,130,NA,NA,monomorphic
+Mnov_gtseq_408,129,130,NA,NA,monomorphic
+Mnov_gtseq_474,129,130,NA,NA,"This alignment is a mess, full of indels; there might be two products here"
+Mnov_gtseq_5,129,130,NA,NA,monomorphic
+Mnov_gtseq_516,129,130,NA,NA,7 reads
+Mnov_gtseq_70,129,130,NA,NA,"There are two good SNPs here, one at 130 and one at 133"
+Mnov_gtseq_79,129,130,NA,NA,"This alignment is messed up, probably not worth worrying about"

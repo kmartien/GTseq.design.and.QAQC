@@ -9,6 +9,15 @@
 # User-specific files
 .Ruserdata
 
+# Specific files and folders
+/vcf
+/results
+/data-raw/bam.files
+/data-raw/sam.files
+/data-raw/fastq
+/results-R/GTseq.loc.seqs.full.CHROM.Rdata
+*.pileup
+
 # Example code in package build process
 *-Ex.R
 

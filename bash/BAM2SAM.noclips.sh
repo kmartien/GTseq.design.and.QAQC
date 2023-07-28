@@ -1,0 +1,1 @@
+for FILE in *.bam; do samtools view -h $FILE | awk '$6 !~ /H|S/{print}' | samtools view -bS | samtools view -h -o ${FILE%.bam}.sam; done

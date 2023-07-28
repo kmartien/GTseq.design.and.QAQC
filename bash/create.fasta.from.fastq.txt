@@ -1,0 +1,5 @@
+#for (i in 1:length(z0012702.Mnov_gtseq_262)){
+for (i in 1:length(rev.seqs)){
+cat(paste0("> z0196887.loc535.",i, "\n"), file = "z0196887.loc535.fasta", append = TRUE)
+cat(paste0(rev.seqs[i], "\n"), file = "z0196887.loc535.fasta", append = TRUE)
+}

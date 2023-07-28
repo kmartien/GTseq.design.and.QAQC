@@ -1,0 +1,1 @@
+for FILE in *.bam; do samtools view -h $FILE -o ${FILE%.bam}.sam; done
