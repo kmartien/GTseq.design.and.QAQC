@@ -1,29 +1,13 @@
 library(dplyr)
 library(Mnov.GTseq.data)
+load("R/functions/extract.number.of.hits.R")
 
 data("Mnov.GTSEEK.panel")
 
-sam.folder <- "Paired.primers.mapped.to.genome"
+sam.folder.path <- "data-raw/sam.files/Paired.primers.mapped.to.genome"
 
-sam.files <- list.files(path = paste0("data-raw/sam.files/", sam.folder), pattern = ".sam")
+primer.matches <- extract.number.of.hits(sam.folder.path)
 
-primer.matches <- do.call(rbind, lapply(sam.files, function(f){
-  temp <- system2(command = "grep",
-                 args = c("X0", paste0("data-raw/sam.files/", sam.folder, "/", f), "|", "sed"),
-                 stdout = TRUE, stderr = TRUE)
-  exact.matches <- do.call(cbind, lapply(1:length(temp), function(i){
-    vec <- strsplit(temp[[i]], split = "\t")[[1]]
-    as.numeric(strsplit(vec[grep(pattern = "X0", vec)], split = ":")[[1]][3])
-  }))
-  res <- data.frame(exact.matches)
-  names(res) <- c("fwd", "rev")
-  return(res)
-}))
-primer.names <- sapply(sam.files, function(f){
-  strsplit(f, split = "[.]")[[1]][1]
-})
-primer.matches <- cbind(Locus = primer.names, primer.matches)
-names(primer.matches)[1] <- "Locus"
 primer.matches$in.panel <- primer.matches$Locus %in% Mnov.GTSEEK.panel$short
 
 GTSEEK.primer.test <- read.csv("/Users/Shared/KKMDocuments/Documents/Karen/Structure/Humpbacks/SNPs/GTSEEK_validation_run/HB-Whale_PrimerTest.csv")
