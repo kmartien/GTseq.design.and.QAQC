@@ -1,7 +1,7 @@
 library(tidyverse)
 library(dplyr)
 
-project <- "RunMS45.90s.10readsMin"
+project <- "RunMS51.allSamps.10readsMin"
 load(paste0("results-R/", project, ".tgt.rda"))
 #labels <- read.table(paste0("microhaplot/non.humpback.samples.label.txt"))
 #names(labels) <- c("fname", "Indiv", "stratum")

@@ -3,15 +3,15 @@ library(dplyr)
 source("R/functions/tgt.2.geno.table.R")
 source("R/functions/haps.w.ns.R")
 
-project <- "RunMs45.90s.528.allSNPs"
+project <- "RunMS51.allsamps"
 
 AB.min.het <- 3/7
 AB.max.homo <- 2/8
 min.AR.het <- 3/10
 max.AR.homo <- 2/10
 min.read.depth <- 10
-num.locs <- 384
-min.genos.per.ind <- 307
+num.locs <- 368
+min.genos.per.ind <- num.locs * 0.8
 
 #locus_annotation <- readRDS(paste0("data/", project, "-microhaplot-locus_annotation.rda"))
 genos <- readRDS(paste0("/Users/Shared/KKMDocuments/Documents/Github.Repos/Shiny/microhaplot/", project, ".rds"))[,-1]
@@ -43,9 +43,26 @@ genos.to.drop <- filter(genos, depth < min.read.depth/2) %>% filter(rank == 1) %
 genos$to.remove[which(genos$id.loc %in% genos.to.drop$id.loc)] <- TRUE
 length(which(genos$to.remove))
 
-# remove haplotypes with rank > 1 and AB < AB.min.het 
-genos$to.remove[which(genos$rank > 1 & genos$allele.balance < AB.min.het)] <- TRUE
+# remove haplotypes with rank > 1 and AB < AB.max.hom
+# this removes minor allele(s) from genos where the major allele frequency
+# is high enough to call a homozygote
+genos$to.remove[which(genos$rank > 1 & genos$allele.balance < AB.max.homo)] <- TRUE
 length(which(genos$to.remove))
+
+# remove genotypes with MAF < AB.min.het
+# this removes genotypes with minor allele frequency not high enough to call a heterozygote
+genos.to.drop <- filter(genos, rank > 1) %>% filter(to.remove == FALSE) %>% 
+  filter(allele.balance < AB.min.het) %>% select(id.loc)
+genos$to.remove[which(genos$id.loc %in% genos.to.drop$id.loc)] <- TRUE
+length(which(genos$to.remove))
+
+# remove genotypes with rank > 4
+genos$to.remove[which(genos$rank > 4)] <- TRUE
+length(which(genos$to.remove))
+
+# remove filtered genotypes
+genos.filtered <- filter(genos, to.remove == FALSE) 
+loci <- unique(genos.filtered$locus)
 
 # check loci for which some individuals have more than two haplotypes, decide which to drop
 excess.haps <- filter(genos, rank > 2) %>% filter(to.remove == FALSE)
@@ -60,20 +77,6 @@ locs.to.drop <- read.csv(file = paste0("data-raw/all.locs.to.check.csv")) %>%
   filter(Status %in% c("Reject", "??")) %>% select(locus)
 
 genos$to.remove[which(genos$locus %in% locs.to.drop$locus)] <- TRUE
-
-# remove genotypes with rank > 4
-genos$to.remove[which(genos$rank > 4)] <- TRUE
-length(which(genos$to.remove))
-
-# remove filtered genotypes
-genos.filtered <- filter(genos, to.remove == FALSE) 
-loci <- unique(genos.filtered$locus)
-
-# check loci for which some individuals have more than two haplotypes, decide which to drop
-excess.haps <- filter(genos.filtered, rank > 2) %>% filter(to.remove == FALSE)
-inds.to.check <- filter(genos.filtered, id.loc %in% excess.haps$id.loc)
-locs.to.check <- data.frame(table(inds.to.check$locus)) %>% mutate(Status = "Accept")
-names(locs.to.check)[1] <- "locus"
 
 # calculate haplotype freqs at remaining loci
 #hapfreqs <- lapply(loci, function(l){
@@ -92,6 +95,12 @@ tgt <- data.frame(do.call(rbind, lapply(unique(genos.filtered$id.loc), function(
   if(length(haps) < 4) haps <- c(haps, rep(NA, (4-length(haps))))
   depth <- df$depth
   if(length(depth) < 4) depth <- c(depth, rep(0, (4-length(depth))))
+  if(!is.na(haps[2])){
+    if(haps[2] < haps[1]) {
+      haps <- haps[c(2, 1, 3, 4)]
+      depth <- depth[c(2, 1, 3, 4)]
+    }
+  }
   res <- c(loc, ind, haps, depth)
   names(res) <- c("locus", "Indiv", "haplo.1", "haplo.2", "haplo.3", "haplo.4", 
                   "depth.1", "depth.2", "depth.3", "depth.4")
