@@ -3,13 +3,13 @@ library(dplyr)
 source("R/functions/tgt.2.geno.table.R")
 source("R/functions/haps.w.ns.R")
 
-project <- "RunMS51.allsamps"
+project <- "all"
 
 AB.min.het <- 3/7
 AB.max.homo <- 2/8
 min.AR.het <- 3/10
 max.AR.homo <- 2/10
-min.read.depth <- 10
+min.read.depth <- 20
 num.locs <- 368
 min.genos.per.ind <- num.locs * 0.8
 
@@ -73,10 +73,10 @@ names(locs.to.check)[1] <- "locus"
 
 ### SEE IF I CAN FIGURE OUT WHAT'S GOING ON 155, 219, AND 302
 #locs.to.drop <- read.csv(file = paste0("data-raw/", project, ".locs.to.check.csv")) %>%
-locs.to.drop <- read.csv(file = paste0("data-raw/all.locs.to.check.csv")) %>%
-  filter(Status %in% c("Reject", "??")) %>% select(locus)
+#locs.to.drop <- read.csv(file = paste0("data-raw/all.locs.to.check.csv")) %>%
+#  filter(Status %in% c("Reject", "??")) %>% select(locus)
 
-genos$to.remove[which(genos$locus %in% locs.to.drop$locus)] <- TRUE
+#genos$to.remove[which(genos$locus %in% locs.to.drop$locus)] <- TRUE
 
 # calculate haplotype freqs at remaining loci
 #hapfreqs <- lapply(loci, function(l){
@@ -124,7 +124,7 @@ names(missing.data.ind) <- c("labID", "genos", "missing")
 length(which(missing.data.ind$genos >= min.genos.per.ind))
 rejected.inds <- missing.data.ind$labID[which(missing.data.ind$genos < min.genos.per.ind)]
 
-tgt <- tgt[-which(tgt$Indiv %in% rejected.inds),]
+#tgt <- tgt[-which(tgt$Indiv %in% rejected.inds),]
 num.inds <- length(unique(tgt$Indiv))
 
 missing.data.loc <- data.frame(table(tgt$locus)) %>%

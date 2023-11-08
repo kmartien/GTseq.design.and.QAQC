@@ -202,6 +202,7 @@ z0046927.merged.sam	z0046927	NA
 z0046929.merged.sam	z0046929	NA
 z0046934.merged.sam	z0046934	NA
 z0047562.merged.sam	z0047562	NA
+z0047587.merged.sam	z0047587	NA
 z0047601.merged.sam	z0047601	NA
 z0047602.merged.sam	z0047602	NA
 z0047603.merged.sam	z0047603	NA
@@ -606,6 +607,7 @@ z0195791.merged.sam	z0195791	NA
 z0196686.merged.sam	z0196686	NA
 z0196687.merged.sam	z0196687	NA
 z0196689.merged.sam	z0196689	NA
+z0196690.merged.sam	z0196690	NA
 z0196691.merged.sam	z0196691	NA
 z0196692.merged.sam	z0196692	NA
 z0196693.merged.sam	z0196693	NA

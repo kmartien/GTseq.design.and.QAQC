@@ -1,0 +1,31 @@
+,Locus,
+1,Mnov_gtseq_115,monomorphic
+2,Mnov_gtseq_116,monomorphic
+3,Mnov_gtseq_139,SNP is at 121
+4,Mnov_gtseq_144,monomorphic
+5,Mnov_gtseq_151,monomorphic
+6,Mnov_gtseq_156,monomorphic
+7,Mnov_gtseq_166,monomorphic
+8,Mnov_gtseq_20,monomorphic
+9,Mnov_gtseq_206,monomorphic (there was never a SNP here - variable length As appeared as a SNP)
+10,Mnov_gtseq_211,monomorphic
+11,Mnov_gtseq_217,This is a good SNP; not sure why it's not in the vcf
+12,Mnov_gtseq_224,SNP is at 128
+13,Mnov_gtseq_228,This is a good SNP; not sure why it's not in the vcf
+14,Mnov_gtseq_256,"There's a SNP here, but its in a long and variable T repeat, which is screwing up the alignments"
+15,Mnov_gtseq_264,monomorphic
+16,Mnov_gtseq_283,"I think there's a SNP here, but its homozygous for the major allele in one smaple, minor allele in two samples"
+17,Mnov_gtseq_291,"Ther eare three SNPs here, including at 130"
+18,Mnov_gtseq_346,This is a good SNP; not sure why it's not in the vcf
+19,Mnov_gtseq_348,monomorphic
+20,Mnov_gtseq_358,monomorphic
+21,Mnov_gtseq_4,monomorphic
+22,Mnov_gtseq_404,monomorphic
+23,Mnov_gtseq_408,There's a variable indel at 126
+24,Mnov_gtseq_414,This is a good SNP; not sure why it's not in the vcf
+25,Mnov_gtseq_419,This is a good SNP; not sure why it's not in the vcf
+26,Mnov_gtseq_437,SNP is at 152
+27,Mnov_gtseq_474,This is a bloody mess! Drop it!
+28,Mnov_gtseq_5,monomorphic
+29,Mnov_gtseq_62,monomorphic
+30,Mnov_gtseq_79,monomorphic

@@ -38,7 +38,7 @@ depth.sum$depth.per.ind$Sample <- paste0(depth.sum$depth.per.ind$Sample, "_R1.fa
 
 RunMS51.ind.summary <- right_join(plate.info, tot.reads.fastq) %>% relocate(Sample) %>%
   left_join(depth.sum$depth.per.ind)
-RunMS51.ind.summary$well <- paste0(RunMS51.ind.summary$Row, RunMS51.ind.summary$Column)
+RunMS51.ind.summary$pct.on.target <-  RunMS51.ind.summary$tot.aligned.reads/RunMS51.ind.summary$tot.reads
 RunMS51.loc.summary <- depth.sum$loc.depth
 
 # save results
@@ -48,6 +48,7 @@ save(RunMS51.ind.summary, RunMS51.loc.summary, file = "results-R/RunMS51.fastq.B
 
 # plot results
 
+RunMS51.ind.summary$well <- paste0(RunMS51.ind.summary$Row, RunMS51.ind.summary$Column)
 line.labels <- data.frame(x = c(20,20), y = c(300,200), label = c("80% of loci", "50% of loci"))
 g.num.genotypable <- ggplot(RunMS51.ind.summary) + geom_bar(aes(x = reorder(Miseq.num, gt.10.aligned), y = gt.10.aligned), stat = "identity") +
   geom_hline(yintercept = 294) + geom_hline(yintercept = 184) +

@@ -1,32 +1,23 @@
+# Use bash script bash/merge.sam.files.sh to merge the files. Use this script to
+# generate a microhaplot label file that uses the merged files for replicated
+# individuals
+
 library(dplyr)
+library(tidyverse)
 
-project <- "merge.sam.test"
+sam.folder <- "all"
 
-label.file <- read.table(paste0("data-raw/mplot_labels/", project, ".label.txt"))
+all.files <- data.frame(fname = list.files(path = paste0("data-raw/sam.files/", sam.folder), pattern = ".sam"))
+all.files$LABIDs <- substr(all.files$fname, start = 1, stop = 8)
+labids <- unique(all.files$LABIDs)
 
-counts <- group_by(label.file, V2) %>% summarise(length(V1))
-
-replicates <- counts$V2[which(counts[,2] > 1)]
-
-rep.files <- filter(label.file, V2 %in% replicates)
-
-## Run this code, then take all of the comments it prints out and copy and paste them into Terminal (one at a time)
-new.label.file.rows <- do.call(rbind, lapply(1:length(replicates), function(i){
-  f <- rep.files$V1[which(rep.files$V2 == replicates[i])]
-  out.f <- paste0(replicates[i], "_merged.sam")
-  system(paste("samtools merge", out.f, f[1], f[2], sep=" "))
-  system2(command = "samtools",
-          args = c("merge", paste0("data-raw/sam.files/", project, "/", replicates[i], "_merged.sam"),
-                   paste0("data-raw/sam.files/", project, "/", f[1]), 
-                   paste0("data-raw/sam.files/", project, "/", f[2])), 
-          stdout = TRUE, stderr = TRUE)
-  c(out.f, replicates[i], NA)
+mplot.labels <- do.call('rbind', lapply(labids, function(i){
+  file.list <- filter(all.files, LABIDs %in% i)
+  if (nrow(file.list) == 1) {return(file.list)} else {
+    return(file.list[grep("merged", file.list$fname),])
+  }
 }))
+mplot.labels$stratum <- NA
 
-write.table(label.file, file = paste0("microhaplot/", project, ".replicates.separate.label.txt"),
-                                      col.names = FALSE, row.names = FALSE, quote = FALSE, sep="\t")
-
-label.file <- label.file[-which(label.file$V2 %in% replicates),]
-label.file <- rbind(label.file, new.label.file.rows)
-write.table(label.file, file = paste0("microhaplot/", project, ".label.txt"), 
+write.table(mplot.labels, file = paste0("data-raw/mplot_labels/", sam.folder, ".label.txt"), 
                                       col.names = FALSE, row.names = FALSE, quote = FALSE, sep="\t")
