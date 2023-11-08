@@ -51,32 +51,18 @@ write.csv(missing.data.ind, file = paste0("results-raw/", project, ".", min.read
 num.inds <- nrow(missing.data.ind)
 
 # summarize locus data
-missing.data.loc <- data.frame(table(tgt$locus[!is.na(tgt$gt)])) %>%
-  mutate(missing = num.inds-Freq)
-names(missing.data.loc)[1] <- "locus"
-length(which(missing.data.loc$missing > round(num.inds * 0.2)))
-
 geno.table <- tgt.2.geno.table(tgt)
-
 geno.table$num.genos <- do.call(rbind, lapply(1:nrow(geno.table), function(i){
   length(which(!is.na(geno.table[i,2:ncol(geno.table)])))
 }))
 
-genos.per.locus <- do.call(rbind, lapply(2:(ncol(geno.table)-1), function(l){
-  length(which(!is.na(geno.table[1:nrow(geno.table),l])))
-}))
-genos.per.locus <- distinct(data.frame(colnames(geno.table)[2:(ncol(geno.table)-1)], genos.per.locus))
-names(genos.per.locus) <- c("locus", "genos")
-
-loci <- unique(genos.per.locus$locus)
-genotypes.per.locus <- data.frame(loci, do.call(rbind, lapply(loci, function(loc){
-  haps <- filter(tgt, locus == loc) %>% filter(!is.na(gt))
-  length(unique(haps$gt))
+loc.sum <- data.frame(colnames(geno.table)[-c(1,ncol(geno.table))], do.call(rbind, lapply(2:(ncol(geno.table)-1), function(l){
+  inds.genoed <- length(which(!is.na(geno.table[1:nrow(geno.table),l])))
+  num.haps <- sum(!is.na(unique(geno.table[,l])))
+  c(inds.genoed, num.haps)
 })))
-names(genotypes.per.locus) <- c("locus", "num.haps")
-loc.sum <- left_join(genotypes.per.locus, genos.per.locus)
+names(loc.sum) <- c("locus", "genos", "num.haps")
 write.csv(loc.sum, file = paste0("results-raw/", project, ".locus.summary.csv"))
-save(loc.sum, file = paste0("results-R/", project, ".locus.summary.rda"))
 
-save(geno.table, tgt, file = paste0("results-R/", project, ".", min.read.depth, "readsMin.tgt.rda"))
+save(geno.table, tgt, loc.sum, file = paste0("results-R/", project, ".", min.read.depth, "readsMin.geno.eval.rda"))
 
