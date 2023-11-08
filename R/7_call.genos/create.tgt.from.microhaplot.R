@@ -3,18 +3,19 @@ library(dplyr)
 source("R/functions/tgt.2.geno.table.R")
 source("R/functions/haps.w.ns.R")
 
-project <- "all"
+project <- "RunMS45"
+genos <- readRDS(paste0("/Users/Shared/KKMDocuments/Documents/Github.Repos/Shiny/microhaplot/", project, ".rds"))[,-1]
+project <- "tgt.testing"
 
 AB.min.het <- 3/7
 AB.max.homo <- 2/8
 min.AR.het <- 3/10
 max.AR.homo <- 2/10
-min.read.depth <- 20
+min.read.depth <- 10
 num.locs <- 368
 min.genos.per.ind <- num.locs * 0.8
 
 #locus_annotation <- readRDS(paste0("data/", project, "-microhaplot-locus_annotation.rda"))
-genos <- readRDS(paste0("/Users/Shared/KKMDocuments/Documents/Github.Repos/Shiny/microhaplot/", project, ".rds"))[,-1]
 genos <- mutate(genos, id.loc = paste0(id, "-", locus))
 genos$to.remove <- FALSE
 
@@ -87,27 +88,39 @@ names(locs.to.check)[1] <- "locus"
 #names(hapfreqs) <- loci
 
 # create tgt-like data structure
-tgt <- data.frame(do.call(rbind, lapply(unique(genos.filtered$id.loc), function(x){
-  df <- filter(genos.filtered, id.loc == x)
+tgt <- data.frame(do.call(rbind, lapply(unique(genos$id.loc), function(x){
+  df <- filter(genos, id.loc == x)
+  if (nrow(df) > 4) df <- df[1:4,]
   loc <- df$locus[1]
   ind <- df$id[1]
   haps <- df$haplo
-  if(length(haps) < 4) haps <- c(haps, rep(NA, (4-length(haps))))
   depth <- df$depth
-  if(length(depth) < 4) depth <- c(depth, rep(0, (4-length(depth))))
-  if(!is.na(haps[2])){
-    if(haps[2] < haps[1]) {
-      haps <- haps[c(2, 1, 3, 4)]
-      depth <- depth[c(2, 1, 3, 4)]
+  if(length(haps) < 4) {
+    haps <- c(haps, rep(NA, (4-length(haps))))
+    depth <- c(depth, rep(0, (4-length(depth))))
+  }
+  #create gt field
+  if(df$to.remove[1]) gt <- NA else{
+    if(nrow(df) == 1) gt <- paste(haps[1],haps[1], sep= "/") else {
+      if(df$to.remove[2]) gt <- paste(haps[1],haps[1], sep= "/") else {
+        gt <- ifelse(haps[2] < haps[1], paste(haps[2],haps[1], sep= "/"), paste(haps[1],haps[2], sep= "/"))
+      }
     }
   }
-  res <- c(loc, ind, haps, depth)
-  names(res) <- c("locus", "Indiv", "haplo.1", "haplo.2", "haplo.3", "haplo.4", 
-                  "depth.1", "depth.2", "depth.3", "depth.4")
-  if(nrow(df) == 1){
-    res[4] <- res[3] 
-    res[8] <- 0
-  }
+  num.haps <- sum(!df$to.remove) 
+#  if(!is.na(haps[2])){
+#    if(haps[2] < haps[1]) {
+#      haps <- haps[c(2, 1, 3, 4)]
+#      depth <- depth[c(2, 1, 3, 4)]
+#    }
+#  }
+  res <- c(loc, ind, gt, haps, depth, num.haps)
+  names(res) <- c("locus", "Indiv", "gt", "haplo.1", "haplo.2", "haplo.3", "haplo.4", 
+                  "depth.1", "depth.2", "depth.3", "depth.4", "num.haps")
+#  if(nrow(df) == 1){
+#    res[4] <- res[3] 
+#    res[8] <- 0
+#  }
   return(res)
 })))
 
@@ -118,7 +131,7 @@ tgt$depth.4 <- as.integer(tgt$depth.4)
 #tgt$allele.balance <- tgt$depth.1/tgt$depth.2
 
 # summarize missing data
-missing.data.ind <- data.frame(table(tgt$Indiv)) %>%
+missing.data.ind <- data.frame(table(tgt$Indiv[!is.na(tgt$gt)])) %>%
   mutate(missing = num.locs-Freq)
 names(missing.data.ind) <- c("labID", "genos", "missing")
 length(which(missing.data.ind$genos >= min.genos.per.ind))
@@ -127,7 +140,7 @@ rejected.inds <- missing.data.ind$labID[which(missing.data.ind$genos < min.genos
 #tgt <- tgt[-which(tgt$Indiv %in% rejected.inds),]
 num.inds <- length(unique(tgt$Indiv))
 
-missing.data.loc <- data.frame(table(tgt$locus)) %>%
+missing.data.loc <- data.frame(table(tgt$locus[!is.na(tgt$gt)])) %>%
   mutate(missing = num.inds-Freq)
 names(missing.data.loc)[1] <- "locus"
 length(which(missing.data.loc$missing > round(num.inds * 0.2)))
