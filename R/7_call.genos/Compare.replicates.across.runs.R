@@ -3,9 +3,9 @@ library(tidyverse)
 library(swfscMisc)
 source("R/functions/Compare.replicates.R")
 
-projects <- list("all.Miseq.runs", "GTseq.val", "RunMS43")
+projects <- list("RunMS51", "RunMS58")
 tgt.list <- lapply(projects, function(p){
-  load(paste0("results-R/", p, ".10readsMin.tgt.rda"))
+  load(paste0("results-R/", p, ".10readsMin.geno.eval.rda"))
   tgt$Indiv <- paste0(tgt$Indiv, ".", p)
   return(tgt)
 })
@@ -22,11 +22,30 @@ unique.files <- unique(tgt$Indiv)
 #unique.files[1:36] <- MS45.ids
 
 LABIDs <- unique.files %>% substr(start = 1, stop = 8)
-replicates <- LABIDs[duplicated(LABIDs)]
+replicates <- unique(LABIDs[duplicated(LABIDs)])
 
-to.check <-do.call('rbind',lapply(replicates, function(r){
+samp.check <-do.call('rbind',lapply(replicates, function(r){
+  print(r)
   rep.tgt <- tgt[grep(substr(r, start = 3, stop = 8), tgt$Indiv),]
-  mismatches <- compare.replicates(rep.tgt)
+  locs <- unique(rep.tgt$locus)
+  samp.compare <- do.call(rbind, lapply(locs, function(l){
+    gts <- filter(rep.tgt, locus == l) %>% select(gt) %>% na.omit()
+    return(c(locus = l, tot.genos = nrow(gts), unique.genos = nrow(unique(gts))))
+  })) %>% data.frame()
+  overlapping.genos <- length(which(samp.compare$tot.genos == 2))
+  mismatches <- length(which(samp.compare$unique.genos > 1))
+  return(c(LABID = r, overlapping.genos = overlapping.genos, mismatches = mismatches))
+  #  filter(rep.tgt, locus %in% samp.compare$locus[which(samp.compare$unique.genos > 1)]) %>% arrange(locus)
+})) %>% data.frame()
+
+write.csv(samp.check, "results-raw/RunMS51.vs.RunMS58.comparisons.csv")
+
+replicates <- filter(samp.check, mismatches > 0) %>% select(LABID)
+
+mismatches <- do.call('rbind',lapply(replicates$LABID, function(r){
+  print(r)
+  rep.tgt <- tgt[grep(substr(r, start = 3, stop = 8), tgt$Indiv),]
+  compare.replicates(rep.tgt)
 }))
 
-write.csv(to.check, "results-raw/all.Miseq.v.GTseq.val.mismatches.csv")
+write.csv(mismatches, "results-raw/RunMS51.vs.RunMS58.mismatches.csv")

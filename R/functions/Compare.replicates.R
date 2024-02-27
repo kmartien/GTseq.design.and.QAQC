@@ -6,7 +6,8 @@ compare.replicates <- function(rep.tgt){
 #  rep.tgt <- unite(rep.tgt, gt, haplo.1, haplo.2, sep = '/', remove = FALSE)
   locs <- unique(rep.tgt$locus)
   mismatches <- sapply(locs, function(l){
-    filter(rep.tgt, locus == l) %>% select(gt) %>% unique() %>% nrow()
+    filter(rep.tgt, locus == l) %>% select(gt) %>% unique() %>% na.omit() %>% nrow()
   })
   filter(rep.tgt, locus %in% names(which(mismatches > 1))) %>% arrange(locus)
+
 }

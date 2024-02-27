@@ -29,6 +29,7 @@ mplot2tgt <- function(project, AB.min.het = 3/7, AB.max.homo = 2/8,
   genos.to.drop <- filter(tot.depth, tot.depth < min.read.depth) %>% mutate(id.loc = paste0(id, "-", locus))
   genos$to.remove[which(genos$id.loc %in% genos.to.drop$id.loc)] <- TRUE
   why.removed$minDepth <- length(which(genos$to.remove))
+  print("Done filtering on read depth")
   
   # remove genotypes for individuals whose read depth of its major haplotype at a locus is less than min.read.depth/2
   genos.to.drop <- filter(genos, depth < min.read.depth/2) %>% filter(rank == 1) %>% filter(to.remove == FALSE)
@@ -51,6 +52,7 @@ mplot2tgt <- function(project, AB.min.het = 3/7, AB.max.homo = 2/8,
   # remove genotypes with rank > 4
   genos$to.remove[which(genos$rank > 4)] <- TRUE
   why.removed$rank.gt.4 <- length(which(genos$to.remove))
+  print("Done filtering on rank and allelic balance")
   
   # create tgt-like data structure
   tgt <- data.frame(do.call(rbind, lapply(unique(genos$id.loc), function(x){

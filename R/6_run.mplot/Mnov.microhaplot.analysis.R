@@ -1,7 +1,7 @@
 library(vcfR)
 library(microhaplot)
 
-run.label <- "all"
+run.label <- "z0053845"
 
 # for your dataset: customize the following paths
 # sam.path <- paste0("data-raw/sam.files/", run.label, ".all")

@@ -5,7 +5,7 @@
 library(dplyr)
 library(tidyverse)
 
-sam.folder <- "all"
+sam.folder <- "RunMS58"
 
 all.files <- data.frame(fname = list.files(path = paste0("data-raw/sam.files/", sam.folder), pattern = ".sam"))
 all.files$LABIDs <- substr(all.files$fname, start = 1, stop = 8)

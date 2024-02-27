@@ -3,7 +3,7 @@ library(Mnov.GTseq.data)
 source("R/3_fastq.handling/Count.reads.in.fastq.R")
 source("R/3_fastq.handling/Find.primer.seqs.in.fastq.R")
 
-project <- "RunMS51"
+project <- "RunMS58"
 read.type <- "paired" # single or paired
 fastq.dir <- paste0("/Users/Shared/KKMDocuments/Documents/Karen/Structure/Humpbacks/Data/Fastq/", project)
 
@@ -17,7 +17,7 @@ fastq.files <- list.files(path = fastq.dir, pattern = "*.fastq.gz")
 
 # use these lines to limit the number of files and primers for testing purposes
 #fastq.files <- fastq.files[97:200]
-#primers <- primers[1:3,]
+primers <- primers[1:10,]
 
 if(read.type == "paired") {
   fastq.files <- fastq.files[grep("R1", fastq.files)]
@@ -40,5 +40,5 @@ sum.by.loc$ratio <- sapply(1:nrow(sum.by.loc), function(l){
   max(sum.by.loc[l,2:3]) / min(sum.by.loc[l,2:3])
 })
 
-save(all.matches, sum.by.ind, sum.by.loc, file = paste0("results-R/Fastq.summary.", project, ".", primer.file,"samps49to100.rda"))
+save(all.matches, sum.by.ind, sum.by.loc, file = paste0("results-R/Fastq.summary.", project, ".", primer.file,".rda"))
 
