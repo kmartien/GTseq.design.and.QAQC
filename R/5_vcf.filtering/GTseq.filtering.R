@@ -5,15 +5,14 @@ source("R/functions/Visualized.filtered.SNPs.R")
 source("R/functions/basic.vcf.filtering.R")
 library(vcftoolsR)
 
-PROJECT <- "ddRAD.528locs"
+PROJECT <- "RunMS58"
 fname <- PROJECT
 vcf.dir <- "vcf"
 results.dir <- "results-raw"
 
 # Filter out low-confidence SNP calls
 # basic.vcf.filtering defaults: minDP < 5, minQ < 20, meanDP < 15, mac < 3, remove monomorphic sites
-res <- basic.vcf.filtering(vcf.dir, fname, paste0(fname,".gtseqFilters"),
-                                  minDP = 10, meanDP = 1, minQ = 10, mac = 1, rm.monomorphic = FALSE)
+res <- basic.vcf.filtering(vcf.dir, fname, paste0(fname,".gtseqFilters"))
 filter.res <- res$filter.res
 old.fname <- res$fname
 fname <- paste0(fname,".gtseqFilters")

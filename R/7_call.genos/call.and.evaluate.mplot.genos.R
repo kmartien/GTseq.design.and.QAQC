@@ -1,9 +1,11 @@
 library(tidyverse)
 library(dplyr)
+setwd("/Users/Shared/KKMDocuments/Documents/Github.Repos/Mnov/GTseq.design.and.QAQC")
 source("R/functions/mplot2tgt.R")
 source("R/functions/Compare.replicates.R")
+setwd("/Users/Shared/KKMDocuments/Documents/Github.Repos/Mnov/Mnov.gtseq.analysis")
 
-project <- "z0053845"
+project <- "RunMS58"
 
 AB.min.het <- 3/7
 AB.max.homo <- 2/8
@@ -20,7 +22,8 @@ tgt <- mplot2tgt(project = project, AB.min.het = AB.min.het, AB.max.homo = AB.ma
 LABIDs <- unique(tgt$Indiv) %>% substr(start = 1, stop = 8)
 replicates <- LABIDs[duplicated(LABIDs)]
 mismatches.to.check <-do.call('rbind',lapply(replicates, function(r){
-  rep.tgt <- filter(tgt, Indiv %in% c(r,paste0(r,"b")))
+  rep.tgt <- tgt[grep(substr(r, start = 1, stop = 8), tgt$Indiv),]
+#  rep.tgt <- filter(tgt, Indiv %in% c(r,paste0(r,"b")))
   mismatches <- compare.replicates(rep.tgt)
 }))
 if(nrow(mismatches.to.check > 0)) {
@@ -57,10 +60,10 @@ geno.table$num.genos <- do.call(rbind, lapply(1:nrow(geno.table), function(i){
 
 loc.sum <- data.frame(colnames(geno.table)[-c(1,ncol(geno.table))], do.call(rbind, lapply(2:(ncol(geno.table)-1), function(l){
   inds.genoed <- length(which(!is.na(geno.table[1:nrow(geno.table),l])))
-  num.haps <- sum(!is.na(unique(geno.table[,l])))
-  c(inds.genoed, num.haps)
+  num.unique.genos <- sum(!is.na(unique(geno.table[,l])))
+  c(inds.genoed, num.unique.genos)
 })))
-names(loc.sum) <- c("locus", "genos", "num.haps")
+names(loc.sum) <- c("locus", "genos", "num.unique.genos")
 write.csv(loc.sum, file = paste0("results-raw/", project, ".", min.read.depth, "readsMin.locus.summary.csv"))
 
 save(geno.table, tgt, loc.sum, file = paste0("results-R/", project, ".", min.read.depth, "readsMin.geno.eval.rda"))

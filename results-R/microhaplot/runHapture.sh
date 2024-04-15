@@ -1,6 +1,0 @@
-perl /Users/kmartien/Library/R/x86_64/4.3/library/microhaplot/perl/hapture -v vcf/RunMS51.targetSNPs.recode.vcf  -s data-raw/sam.files/z0053845/z0053845_Mnov_GTseek_022_098_PLT_2.fastq.sam -i z0053845.prod -g NA > results-R/microhaplot/intermed/z0053845_z0053845.prod_1.summary & 
-perl /Users/kmartien/Library/R/x86_64/4.3/library/microhaplot/perl/hapture -v vcf/RunMS51.targetSNPs.recode.vcf  -s data-raw/sam.files/z0053845/z0053845_Mnov_MS51_n0028496.fastq.sam -i z0053845.MS51 -g NA > results-R/microhaplot/intermed/z0053845_z0053845.MS51_2.summary & 
-perl /Users/kmartien/Library/R/x86_64/4.3/library/microhaplot/perl/hapture -v vcf/RunMS51.targetSNPs.recode.vcf  -s data-raw/sam.files/z0053845/z0053845_Mnov_MS58_n0034800.fastq.sam -i z0053845.MS58 -g NA > results-R/microhaplot/intermed/z0053845_z0053845.MS58_3.summary & 
-perl /Users/kmartien/Library/R/x86_64/4.3/library/microhaplot/perl/hapture -v vcf/RunMS51.targetSNPs.recode.vcf  -s data-raw/sam.files/z0053845/z0053845_Mnov_MS58_n0034804.fastq.sam -i z0053845.MS58b -g NA > results-R/microhaplot/intermed/z0053845_z0053845.MS58b_4.summary & wait;
-wait;
-cat results-R/microhaplot/intermed/z0053845_*.summary > results-R/microhaplot/intermed/all.summary

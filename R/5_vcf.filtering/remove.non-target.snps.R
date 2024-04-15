@@ -6,7 +6,7 @@ library(Mnov.GTseq.data)
 source("R/vcf2genos/0 Load vcf2genos functions.R")
 
 # description should be the name of the vcf file (without extension) that you want to filter
-description = "RunMS51"
+description = "RunMS58"
 
 # If you don't have a bed file in a data package, you can read one in from a .csv
 data("SWFSC.bed")
