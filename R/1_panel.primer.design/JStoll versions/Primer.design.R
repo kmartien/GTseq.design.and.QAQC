@@ -4,9 +4,8 @@ library(vcfR)
 library(tidyr)
 library(dplyr)
 library(tidyverse)
+library(here)
 
-
-setwd("~/Documents/Karen/Structure/Humpbacks/SNPs/Mnov_ddRAD_noFlash")
 load("Selected.SNPs.top10pct.Rdata")
 
 #First read in the reference genome, which I split into five files, and select the contigs that contain target loci.  That way
@@ -45,41 +44,60 @@ save(chosen.loc.seqs,file="chosen.loc.seqs.Rdata")
 #Read in the filtered VCF file that resulted from the SNP discovery phase.  Change all SNPs to Ns, select the sequence flanking 
 #each target locus, and write it to a file formatted to be read by BatchPrimer3
 
-vcf <- read.vcfR("vcf/Mnov_filtered_SNPs.vcf", convertNA = T)
 
-tidy_gt <- vcfR2tidy(vcf, 
+#Try reading in the 472 500 bp regions I've selected from dataset as fasta
+chosen.loc.seqs<-read.fasta(file="./JA_DATA/primerregions2.fa", set.attributes = TRUE)
+#chosen.loc.seqs<-do.call('rbind',strsplit(names(chosen.loc.seqs),":",fixed=TRUE, cols(c("chromo","length")))[,1])
+#chosen.loc.seqs<- chosen.loc.seqs %>% separate_wider_delim(names(chosen.loc.seqs, delim = ":", names= c("chromo","length")))
+
+vcf2 <- read.vcfR("JA_DATA/phased_2019HIRAD.gt.vcf", convertNA = T)
+vcf2<- v[which(tidy_gt$chromo==n),c(1,2,3,4)]
+#try with mafs file which only has snps, vcf has nonvariant sites also
+vcf<- read.table("JA_DATA/2019RAD_snpsonly.mafs")
+colnames(vcf)<-vcf[1,]
+vcf<-vcf[-1,]
+tidy_gt<-vcf
+
+tidy_gt2 <- vcfR2tidy(vcf2, 
                      single_frame = TRUE, 
                      info_fields = c("DP"), #"AS", "AD", "DP", "GQ", "AC", "AN", "PRO", "PAO", "AB", "DPRA", "ODDS", "MQM", "MQMR"
                      format_fields = c("GT", "GL", "AD", "RO", "QR", "AO", "QA")) #"GQ", "AC", "DP", "MIN_DP"=NA
-tidy_gt$dat$CHROM <- do.call('rbind',strsplit(tidy_gt$dat$CHROM,".",fixed=TRUE))[,1]
+tidy_gt2$dat$CHROM <- do.call('rbind',strsplit(tidy_gt2$dat$CHROM,".",fixed=TRUE))[,1]
 
 seq.frags <- do.call('c',lapply(names(chosen.loc.seqs), function(n){
   #get positions of all SNPs, including those I'm not targeting, and change them to n's
-  snps <- tidy_gt$dat[which(tidy_gt$dat$CHROM==n),c(1,2,4,5)]
-  snp.pos <- unique(snps$POS)
-  n.4.snps <- as.character(chosen.loc.seqs[[which(names(chosen.loc.seqs)==n)]])
+  tempn<-as.data.frame(chosen.loc.seqs[[n]])
+  startpos<-as.numeric(map_chr(str_split(map_chr(str_split(names(chosen.loc.seqs[n]),":"), 2),"-"),1)) #the name of the n at the time to only have the positions, and also add the chromo to it)
+  tempn$position<-seq(startpos,(startpos+500))
+  chromn<-map_chr(str_split(names(chosen.loc.seqs[n]),":"), 1)
+  snps <- tidy_gt %>% filter(tidy_gt$chromo==chromn, tidy_gt$position >= startpos,tidy_gt$position <= (startpos+500))
+  snp.pos <- unique(snps$position)
   for (i in 1:length(snp.pos)){
-    ref.nuc <- tolower(snps[which(snps$POS==snp.pos[i])[1],3])
-    if(n.4.snps[snp.pos[i]]==ref.nuc) n.4.snps[snp.pos[i]] <- 'n' else stop(paste("The nucleotide in chosen.loc.seqs does not match what's expected from the vcf.", n, i,sep=" "))
+    tempn$x[tempn$position==snp.pos[i]] <- '[N]' 
   }
-  #extract 129 bps on either side of each of my chosen snps
-  target.snps <- chosen.locs$pos[which(chosen.locs$locus == n)]
-  frags <- lapply(target.snps, function(p){
-    n.4.snps[(p-129):(p+129)]
-  })
-  names(frags) <- paste(n,target.snps,sep="_")
+  
+  frags<-  as.data.frame(toupper(tempn$x))
+  names(frags)<- n
   return(frags)
-}))
+  
+  }))
+
 
 #Write target amplicons to files.  BatchPrimer3 only accepts 500 amplicons at a time, so
 #the amplicons are written to multiple files in groups of 500
+
 lapply(1:length(seq.frags), function(i){
-  fname = paste("Mnov_target_amplicons_",(floor(i/500)+1),".fasta",sep="")
+  fname = paste("target_amplicons_",(floor(i/500)+1),".fasta",sep="")
   write(paste(">",names(seq.frags)[i],sep=" "),file=fname,append = TRUE)
-  write(paste(c(toupper(seq.frags[[i]][1:129]), '[N]', toupper(seq.frags[[i]][131:259])),sep="",collapse=""),file=fname,append=TRUE)
+  write(paste(seq.frags[[i]][1:501],sep="",collapse=""),file=fname,append=TRUE)
   write("\n",file=fname,append=TRUE)
   names(seq.frags)[i]
 })
+
+
+
+
+
 
 ###########################################################################
 #
