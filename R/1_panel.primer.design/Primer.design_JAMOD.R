@@ -50,19 +50,19 @@ chosen.loc.seqs<-read.fasta(file="./JA_DATA/primerregions2.fa", set.attributes =
 #chosen.loc.seqs<-do.call('rbind',strsplit(names(chosen.loc.seqs),":",fixed=TRUE, cols(c("chromo","length")))[,1])
 #chosen.loc.seqs<- chosen.loc.seqs %>% separate_wider_delim(names(chosen.loc.seqs, delim = ":", names= c("chromo","length")))
 
-vcf2 <- read.vcfR("JA_DATA/phased_2019HIRAD.gt.vcf", convertNA = T)
-vcf2<- v[which(tidy_gt$chromo==n),c(1,2,3,4)]
+#vcf2 <- read.vcfR("JA_DATA/phased_2019HIRAD.gt.vcf", convertNA = T)
+#vcf2<- v[which(tidy_gt$chromo==n),c(1,2,3,4)]
 #try with mafs file which only has snps, vcf has nonvariant sites also
 vcf<- read.table("JA_DATA/2019RAD_snpsonly.mafs")
 colnames(vcf)<-vcf[1,]
 vcf<-vcf[-1,]
 tidy_gt<-vcf
 
-tidy_gt2 <- vcfR2tidy(vcf2, 
+#tidy_gt2 <- vcfR2tidy(vcf2, 
                      single_frame = TRUE, 
                      info_fields = c("DP"), #"AS", "AD", "DP", "GQ", "AC", "AN", "PRO", "PAO", "AB", "DPRA", "ODDS", "MQM", "MQMR"
                      format_fields = c("GT", "GL", "AD", "RO", "QR", "AO", "QA")) #"GQ", "AC", "DP", "MIN_DP"=NA
-tidy_gt2$dat$CHROM <- do.call('rbind',strsplit(tidy_gt2$dat$CHROM,".",fixed=TRUE))[,1]
+#tidy_gt2$dat$CHROM <- do.call('rbind',strsplit(tidy_gt2$dat$CHROM,".",fixed=TRUE))[,1]
 
 seq.frags <- do.call('c',lapply(names(chosen.loc.seqs), function(n){
   #get positions of all SNPs, including those I'm not targeting, and change them to n's
@@ -113,15 +113,160 @@ lapply(1:length(seq.frags), function(i){
 
 #Read in the details of the primers designed by BatchPrimer3.  They're in multiple
 #files due to 500 locus limit on BatchPrimer3
-primer.deets <- do.call('rbind',lapply(1:12, function(i){
-  fname <- list.files(path = paste("Mnov_primer_results_",i,sep=""),pattern="tmp.csv")
-  tab <- read.csv(file=paste("Mnov_primer_results_",i,"/",fname,sep=""),as.is = TRUE)
-}))
-primer.deets[,1:2] <- do.call("rbind",strsplit(primer.deets$Seq.ID,split="_",fixed=TRUE))
-names(primer.deets)[1:2] <- c("locus","pos")
-primer.deets$pos <- as.numeric(primer.deets$pos)
 
-save(primer.deets, file="primer.deets.Rdata")
+#if only reading in one file, changed to csv inexcel first
+primer.deets <- read.csv("JA_DATA/target_amplicons_1.4.csv")
+#batchprimer3 only generated one primer set per locus so I can't rang by importance or heterozygosity?
+
+#calculate how many snps inside the insert region for each locus:
+
+#first add in columns for the chromo start position for the locus of interest, and the true start and end positions of the amplicon
+primer.deets$locuschrom<-map_chr(str_split(primer.deets$Seq.ID,":"), 1)
+primer.deets$locusstart<-as.numeric(map_chr(str_split(map_chr(str_split(primer.deets$Seq.ID,":"), 2),"-"),1))
+primer.deets$locusend <-as.numeric(map_chr(str_split(map_chr(str_split(primer.deets$Seq.ID,":"), 2),"-"),2))
+primer.deets$ampstart <-primer.deets$locusstart + primer.deets$Start -1
+primer.deets$ampend <- primer.deets$ampstart + primer.deets$Prod.Size -1 
+
+#get number of ns (snps) in each amplicon
+Fonly<-  primer.deets %>% filter(Orientation == "FORWARD")
+amplicon.snps<- as.data.frame(matrix(NA,(nrow(Fonly)),3))
+colnames(amplicon.snps)<- c("locus","no.snps","rankorder")
+#tidy_gt$position <-as.numeric(tidy_gt$position)
+
+ for (i in 1:nrow(Fonly)) {
+  
+  amplicon.snps[i,1]<- Fonly$Seq.ID[i]
+  amplicon.snps[i,2]<-tidy_gt %>% filter(tidy_gt$chromo == Fonly$locuschrom[i],tidy_gt$position >= Fonly$ampstart[i], tidy_gt$position <= Fonly$ampend[i]) %>% count()
+  amplicon.snps[i,3]<-Fonly$Count[i]
+}
+  
+#append snp count to primer.deets
+primer.deets <- left_join(x=primer.deets, y=amplicon.snps, join_by("Seq.ID" == "locus" ,"Count" == "rankorder"), keep = FALSE)
+
+primer.deets %>% filter(Orientation == "FORWARD") %>% filter(no.snps >0) %>% count()
+primer.deets %>% filter(Orientation == "FORWARD") %>% filter(no.snps >0) %>% count(no.snps)
+primer.deets %>% filter(Orientation == "FORWARD") %>% filter(no.snps >0) %>% summarise(sum(no.snps))
+
+#211 loci with at least 1 snp, total of 342 SNPs, not amazing but better than what I've been getting? No snps in primer regions, all between 90-143bp product
+#no.snps   n
+#1       1 128
+#2       2  55
+#3       3  20
+#4       4   5
+#5       8   3
+
+
+#ran batchprimer 3 again with the same data and conditions and it generated a different set (target_amplicons_1.2.csv)
+#279 loci with at least 1 snp, total of 561 SNPs
+#no.snps   n
+#1       1 117
+#2       2  85
+#3       3  55
+#4       4  13
+#5       5   3
+#6       6   3
+#7       7   1
+#8       8   1
+#9       9   1
+
+
+
+#running again with sam data BUT chaning product length to be between 170-220 (target_amplicons_1.3.csv)
+#359 loci with at least 1 snp, total of 877 snps
+#  no.snps   n
+#1       1 102
+#2       2  93
+#3       3 104
+#4       4  40
+#5       5  11
+#6       6   5
+#7       7   1
+#8       8   2
+#9       9   1
+
+#Other values to consider/
+#the value for "any" is the calvulated score of the tendenc of a primer to bind to itself, scores ANY binding occurring within the entire primer sequence. the max is 8
+#there is another score for tendeny of left primer to bind to righ tprimer with a max value of 8 also. Similar for the 3' binding (which would result in primer dimers and the default val is 3)
+#See no reason to be concerned with the values I have currently for their tendency to form primer dimers, so moving on
+
+#try setting primer 3 to output 5 primer sets per locus instead of 1 to sort that way. Find that even with multiple primer sets per locus the number of snps isn't that different
+#find loci where none of the primer sets result in snps in insert:
+
+primer.deets %>% group_by(Seq.ID) %>% summarise(max_snps = max(no.snps)) %>% filter(max_snps == 0) %>% count()
+#52 loci have no primer sets that result in snps , leaving 420 loci
+
+no_snp_loci<-primer.deets %>% group_by(Seq.ID) %>% summarise(max_snps = max(no.snps)) %>% filter(max_snps == 0) 
+
+onlysnps_primerdeets<-primer.deets %>% filter(!Seq.ID %in% no_snp_loci$Seq.ID)
+
+checkloci<-onlysnps_primerdeets %>% group_by(Seq.ID) %>% summarise(has_zero = any(no.snps == 0)) %>% filter(has_zero == TRUE)
+checkprimers<-onlysnps_primerdeets %>% filter(Seq.ID %in% checkloci$Seq.ID) %>% filter(no.snps != 0)
+
+
+#want to choose the primer pair for each locus that results in the highest number of snps, and if there are multiple with the same snp count choose the lowest count value ( highest rank)
+
+unique_seq_ids <- unique(onlysnps_primerdeets$Seq.ID)
+selected_rows <-data.frame()
+
+for (i in 1:length(unique_seq_ids)) {
+  print(paste0("working with seq_id", unique_seq_ids[i])) 
+  subset_data <- onlysnps_primerdeets[onlysnps_primerdeets$Seq.ID == unique_seq_ids[i], ]  # Subset for each Seq.ID
+  max_snps <- max(subset_data$no.snps)  # Find maximum no.snps within subset
+  filtered_subset <- subset_data[subset_data$no.snps == max_snps, ]  # Subset where no.snps is highest
+
+  if (nrow(filtered_subset) > 2) {
+    min_count <- min(filtered_subset$Count)  # Find minimum count within subset
+    final_subset <- filtered_subset[filtered_subset$Count == min_count, ]  # Subset where count is lowest
+    selected_rows <- rbind(selected_rows, final_subset)  # Append to selected_rows
+  } else {
+    selected_rows <- rbind(selected_rows, filtered_subset)  # Append to selected_rows
+  }
+  
+}
+
+selected_rows %>% filter(Orientation == "FORWARD") %>% filter(no.snps >0) %>% count(no.snps)
+#420 loci, snp distrbution: 1186 total snps
+#no.snps   n
+#1        1  70
+#2        2 108
+#3        3 144
+#4        4  60
+#5        5  21
+#6        6   8
+#7        7   3
+#8        8   4
+#9        9   1
+#10      13   1
+
+#note that SUPER_14:4263211-4263380, SUPER_17:21988648-21988821, SUPER_17:23218405-23218574, SUPER_19:7365224-7365724 ended up in here twice, removed from fasta file downstream
+
+
+##SNPs that don't have another target SNP within 100,000 bp are good.  For those that do 
+#have another target SNP within that distance, I need to check to decide which one to keep
+
+locs <- selected_rows  %>% filter(Orientation == "FORWARD")
+locs <-locs %>% group_by(locuschrom) %>% mutate(ampdist = ampstart - lag(ampend))
+locs <- locs %>% mutate(CHECK = ifelse(ampdist <=10000, "CHECK","PASS"))
+locs %>% filter(CHECK == "CHECK") %>% count()
+locs$ampname <- paste0(locs$locuschrom,":",locs$ampstart,"-",locs$ampend)
+#filter out strange duplicates that got in there?
+locs <- locs %>% filter(!duplicated(ampname))
+selected_rows <- selected_rows %>% filter(Seq.ID %in% locs$Seq.ID)
+# There are 79 amplicons that are within 100000 bases of each other, should filter out? That woul dleave 341, or if we do 10k 
+
+
+# Make bed file of amplicon start and end for extracting fasta sequence and blasting amplicons to each other
+write.table(locs[,c("locuschrom","ampstart","ampend","Seq.ID")],"distfiltloci.bed", sep = '\t', quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table((selected_rows %>% filter(Orientation == "FORWARD"))[,c("locuschrom","ampstart","ampend","Seq.ID")],"nodistfiltloci.bed", sep = '\t', quote = FALSE, row.names = FALSE, col.names = FALSE)
+
+modbed<-selected_rows %>% filter(Orientation == "FORWARD") %>% select("locuschrom","ampstart","ampend","Prod.Size") %>% mutate(ampname = paste0(locuschrom,":",ampstart,"-",ampend)) %>% mutate(amp0 = 0) %>% mutate(ampstoppos = 0 + Prod.Size)
+
+write.table((selected_rows %>% filter(Orientation == "FORWARD"))[,c("locuschrom","ampstart","ampend","Prod.Size")],"nodistfiltloci.bed", sep = '\t', quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(modbed[,5:7],"bedforgatk.bed",sep = '\t', quote = FALSE, row.names = FALSE, col.names = FALSE)
+
+
+
+######################## Karen's filters ###############
 
 #I'm hoping to end up with 500 loci, so start by selecting the top ranked 350 from each the 
 #RF importance ranking and the heterozygosity ranking.  The join of those two sets is my working list
