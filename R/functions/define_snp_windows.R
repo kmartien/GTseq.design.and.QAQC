@@ -8,32 +8,21 @@
 # Note that this will crash if your vcf files includes SNPs with more than 
 # two alleles. 
 
-define_snp_windows <- function(vcf, window.sz = 134, min.SNPs = 2, max.SNPs = 5){
-
-  # convert vcf to a tibble and add a column 'locus' that combines CHROM and POS
-  # of the SNPs
-  tidy.vcf <- vcfR2tidy(vcf, single_frame = TRUE, 
-                        info_fields = c("DP"), format_fields = c("GT"))$dat %>%
-    mutate(locus = paste(CHROM, POS, sep= "_")) %>%
-    relocate(locus, .after = POS)
-
-  ## use this line to limit length for testing purposes
-  #tidy.vcf <- tidy.vcf[1:100000,]
+define_snp_windows <- function(tidy.vcf, window.sz = 134, min.SNPs = 1, max.SNPs = 5){
 
   ## calculate allele frequencies at each SNP
   allele.freqs <- vcf2allelefreqs(tidy.vcf)
 
   ## identify unique loci (vcf has entries for every individual at every locus)
-  bd <- select(tidy.vcf, c(locus, CHROM, POS)) %>% distinct()
-  names(bd) <- c("locus", "CHROM", "start")
+  all.chrom.bd <- select(tidy.vcf, c(locus, CHROM, POS)) %>% distinct()
+  names(all.chrom.bd) <- c("locus", "CHROM", "start")
 
   ## identify windows separately on each chromosome
-  window.list <- lapply(unique(bd$CHROM), function(l){
+  window.list <- lapply(unique(all.chrom.bd$CHROM), function(l){
     print(l) #printing each locus gives an indication of progress
-    bd <- filter(bd, CHROM == l) %>% arrange(start) # make sure SNPs are in order by position
+    bd <- filter(all.chrom.bd, CHROM == l) %>% arrange(start) # make sure SNPs are in order by position
 
-    if (nrow(bd) == 1) return(NULL) #if there's only one SNP on a chromosome, there are no windows
-    snp.windows <- data.frame(do.call(bind_rows,lapply(1:(nrow(bd) - 1), function(i){
+    snp.windows <- data.frame(do.call(bind_rows,lapply(1:nrow(bd), function(i){
       ## identify SNPs within window.sz downstream of the focal SNP
       snps.in.window <- filter(bd[(i):(i+5),], start <= bd$start[i] + window.sz)
       
@@ -50,9 +39,7 @@ define_snp_windows <- function(vcf, window.sz = 134, min.SNPs = 2, max.SNPs = 5)
     })))
     return(snp.windows)
   })
-  names(window.list) <- unique(bd$CHROM)
+  names(window.list) <- unique(all.chrom.bd$CHROM)
   
-  ## remove chromosomes with no windows identified
-  window.list <- window.list[-which(sapply(window.list, is.null))]
   return(window.list)
 }

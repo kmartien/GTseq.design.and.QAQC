@@ -3,9 +3,9 @@ library(grid)
 library(gridExtra)
 
 #source("R/SNPFILT/libraries.R")
-source("R/SNPFILT/ggplot.R")
-source("R/SNPFILT/VCFfilterstats.R")
-source("R/SNPFILT/xtrafunctions.R")
+source("/Users/Shared/KKMDocuments/Documents/Github.Repos/Mnov/GTseq.design.and.QAQC/R/SNPFILT/ggplot.R")
+source("/Users/Shared/KKMDocuments/Documents/Github.Repos/Mnov/GTseq.design.and.QAQC/R/SNPFILT/VCFfilterstats.R")
+source("/Users/Shared/KKMDocuments/Documents/Github.Repos/Mnov/GTseq.design.and.QAQC/R/SNPFILT/xtrafunctions.R")
 
 visualize.vcf.ind <- function(res.dir, fname){
 

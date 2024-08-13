@@ -1,11 +1,11 @@
 # Implements filtering scheme 5 from O'Leary et al 2018
 
-source("R/functions/Summarize.vcf.R")
-source("R/functions/Visualized.filtered.SNPs.R")
-source("R/functions/basic.vcf.filtering.R")
+source("/Users/Shared/KKMDocuments/Documents/Github.Repos/Mnov/GTseq.design.and.QAQC/R/functions/Summarize.vcf.R")
+source("/Users/Shared/KKMDocuments/Documents/Github.Repos/Mnov/GTseq.design.and.QAQC/R/functions/Visualized.filtered.SNPs.R")
+source("/Users/Shared/KKMDocuments/Documents/Github.Repos/Mnov/GTseq.design.and.QAQC/R/functions/basic.vcf.filtering.R")
 library(vcftoolsR)
 
-PROJECT <- "ddRAD.528locs"
+PROJECT <- "BCFtools.mpileup.CATS.loci"
 fname <- PROJECT
 vcf.dir <- "vcf"
 results.dir <- "results-raw"
@@ -15,7 +15,7 @@ summarize.vcf(vcf.dir, results.dir, fname, res.name = fname)
 
 # Filter out low-confidence SNP calls
 # basic.vcf.filtering defaults: minDP < 5, minQ < 20, meanDP < 15, mac < 3, remove monomorphic sites
-res <- basic.vcf.filtering(vcf.dir, fname, paste0(fname,".basicFilters"))
+res <- basic.vcf.filtering(vcf.dir, fname, paste0(fname,".basicFilters"), mac = 1)
 #fname <- paste0(fname,".basicFilters")
 
 filter.res <- res$filter.res

@@ -15,6 +15,8 @@
 /data-raw/bam.files
 /data-raw/sam.files
 /data-raw/fastq
+/data-raw/GCA*.fna
+/data/*chosen.loc.seqs.rda
 /results-R/GTseq.loc.seqs.full.CHROM.Rdata
 /instructions/SNP_panel_workflow.html
 *.pileup
