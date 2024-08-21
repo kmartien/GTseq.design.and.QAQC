@@ -41,8 +41,8 @@ window.list <- define_snp_windows(tidy.vcf)
 
 ## evaluate overlapping windows with evaluate_window_clusters(window.list)
 # This script identifies 'clusters' as being groups of windows where the stop
-# position of one windows is after the start position of the next one. It then 
-# one window from each cluster to keep based on the mean heterozygosit and number
+# position of one windows is after the start position of the next one. It then chooses
+# one window from each cluster to keep based on the mean heterozygosity and number
 # of SNPs in each window and returns one window per cluster.
 final.windows <- do.call(rbind, evaluate_window_clusters(window.list))
 
