@@ -1,25 +1,25 @@
 # Does minimal filtering of GTseq data before moving over to vcf2genotypes.R
 
-source("R/functions/Summarize.vcf.R")
-source("R/functions/Visualized.filtered.SNPs.R")
-source("R/functions/basic.vcf.filtering.R")
+source("/Users/Shared/KKMDocuments/Documents/Github.Repos/Mnov/GTseq.design.and.QAQC/R/functions/Summarize.vcf.R")
+source("/Users/Shared/KKMDocuments/Documents/Github.Repos/Mnov/GTseq.design.and.QAQC/R/functions/Visualized.filtered.SNPs.R")
+source("/Users/Shared/KKMDocuments/Documents/Github.Repos/Mnov/GTseq.design.and.QAQC/R/functions/basic.vcf.filtering.R")
 library(vcftoolsR)
 
 PROJECT <- "RunMS58"
 fname <- PROJECT
 vcf.dir <- "vcf"
-results.dir <- "results-raw"
+results.dir <- "results-raw/vcf_filtering"
 
 # Filter out low-confidence SNP calls
 # basic.vcf.filtering defaults: minDP < 5, minQ < 20, meanDP < 15, mac < 3, remove monomorphic sites
-res <- basic.vcf.filtering(vcf.dir, fname, paste0(fname,".gtseqFilters"))
+res <- basic.vcf.filtering(vcf.dir, fname, paste0(fname,".basicFilters"))
 filter.res <- res$filter.res
 old.fname <- res$fname
 fname <- paste0(fname,".gtseqFilters")
 file.rename(from = paste0(old.fname, ".recode.vcf"), to = paste0("vcf/", fname, ".recode.vcf"))
 
 #  Summarize again and plot individual and locus summaries
-#summarize.vcf(vcf.dir, results.dir, fname = paste0(fname, ".recode"), res.name = fname)
+summarize.vcf(vcf.dir, results.dir, fname = paste0(fname, ".recode"), res.name = fname)
 
 # Decompose variants and retain only SNPs.
 #########################################################################
